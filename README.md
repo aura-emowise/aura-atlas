@@ -9,16 +9,24 @@ Tagline: Visualizing the collective mind for a better world and a better self.
 AURA is an innovative software platform, created as part of the Google Maps Platform hackathon. For the first time in the world, it visualizes the collective psycho-emotional state of the population in real-time, transforming a standard map into a living, breathing "neuro-geographic atlas."
 
 The project is based on the concept outlined in the patent by inventor Aleksandr Prokofev: "Google Cloud Mind and Generalized Cognitive Mapping (GCM)". AURA aggregates billions of anonymized biometric signals from users of wellness applications (such as EmoWise) to create an "emotional climate" map of cities and regions.
+
 Our goal is to make the invisible landscape of stress, calm, productivity, and well-being visible and useful for citizens, businesses, and urban authorities.
 
 ✨ Key Features
 This interactive web application demonstrates the core functionality of the AURA platform:
+
 🌡️ "Emotional Climate" Layer: A dynamic heatmap showing zones of stress (red) and calm (green) in a city.
+
 📍 Neuro-Emotional POIs: Interactive points of interest where clicking provides a detailed AI analysis of their "emotional profile" using the Gemini API.
+
 🍃 Cognitive Navigation: The ability to plot not just the fastest, but also the "calmest" route, avoiding high-stress areas.
+
 🌬️ Environmental Analysis: Integration with the Air Quality API to assess air quality and receive AI-powered health recommendations.
+
 🤝 Eco-Emotional Synthesis: A unique feature using the Gemini API to analyze the link between air quality and the collective mood in an area.
+
 🚶‍♂️ Activity Simulation: An interactive walking simulation to demonstrate how physical activity can be analyzed in the context of the environment.
+
 🏙️ Immersive 3D View: A demonstration of the concept of visualizing data in a three-dimensional space.
 
 🛠️ Technology Stack
