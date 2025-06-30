@@ -1,6 +1,7 @@
 # aura-atlas
-
-
+<p>
+Click here --> <a href="https://html-preview.github.io/?url=https://github.com/aura-emowise/aura-atlas/blob/main/index.html" target="_blank">to open project</a>
+</p>
 AURA:  Neuro-Geographic Atlas
 Tagline: Visualizing the collective mind for a better world and a better self.
 🚀 About the Project
