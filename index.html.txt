@@ -1,0 +1,224 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AURA: Neuro-Geographic Atlas (v5)</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
+        .transition-all { transition: all 0.3s ease-in-out; }
+        .active-map-btn { background-color: #3b82f6 !important; color: white !important; }
+        .pac-container { z-index: 1050 !important; border-radius: 8px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
+        .pac-item { padding: 10px; font-size: 14px; border-bottom: 1px solid #e5e7eb; }
+        .pac-item:last-child { border-bottom: none; }
+        .pac-item-query { font-weight: 600; }
+        .loader {
+            border: 4px solid #f3f3f3; border-top: 4px solid #3498db;
+            border-radius: 50%; width: 40px; height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="bg-gray-100 flex h-screen overflow-hidden">
+
+    <!-- Control Sidebar -->
+    <div id="sidebar" class="w-full md:w-[400px] bg-white shadow-lg flex flex-col h-full flex-shrink-0">
+        <!-- Header -->
+        <div class="flex items-center space-x-3 p-4 border-b">
+            <div class="p-2 bg-blue-500 rounded-lg">
+                <i class="ph-bold ph-brain text-white text-3xl"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold text-gray-800">AURA</h1>
+                <p class="text-sm text-gray-500">Neuro-Geographic Atlas</p>
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="flex-grow p-4 overflow-y-auto space-y-6">
+            
+            <!-- AI & Environmental Analysis Section -->
+            <div>
+                <h2 class="text-lg font-semibold text-gray-700 mb-3">Global Analysis</h2>
+                <div class="space-y-2">
+                    <button id="checkAirQuality" class="w-full p-3 bg-cyan-500 text-white rounded-lg hover:bg-cyan-600 transition-all flex items-center justify-center text-sm"><i class="ph-bold ph-wind mr-2"></i>Check Air Quality</button>
+                    <button id="getAreaInsights" class="w-full p-3 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition-all flex items-center justify-center text-sm"><span class="mr-2">✨</span> Get Area Insights</button>
+                </div>
+            </div>
+
+            <!-- Navigation Section -->
+            <div id="navigation-section">
+                <h2 class="text-lg font-semibold text-gray-700 mb-3">Cognitive Navigation</h2>
+                <div class="space-y-3">
+                    <input id="origin" type="text" placeholder="From" class="w-full p-2 border rounded-lg">
+                    <input id="destination" type="text" placeholder="To" class="w-full p-2 border rounded-lg">
+                    <div class="grid grid-cols-2 gap-2">
+                        <button id="calcFastestRoute" class="w-full p-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all flex items-center justify-center text-sm"><i class="ph-bold ph-rocket-launch mr-2"></i>Fastest</button>
+                        <button id="calcCalmestRoute" class="w-full p-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all flex items-center justify-center text-sm"><i class="ph-bold ph-leaf mr-2"></i>Calmest</button>
+                    </div>
+                     <button id="clearRouteBtn" class="w-full p-2 bg-gray-200 text-gray-700 rounded-lg text-sm hidden mt-2">Clear Route</button>
+                </div>
+            </div>
+            
+            <div class="text-center text-xs text-gray-400 mt-4 pt-4 border-t">
+                <p>AURA Project Hackathon Demo, 2025</p>
+                <p>GCM Concept: A. Prokofev</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Map Container -->
+    <div class="flex-grow h-full w-full relative">
+        <div id="map" class="h-full w-full"></div>
+
+        <!-- Map Controls Overlay -->
+        <div class="absolute top-4 right-4 flex flex-col space-y-2">
+            <button id="toggleHeatmap" title="Toggle Emotional Climate" class="bg-white p-3 rounded-full shadow-md hover:bg-gray-100 transition-all"><i class="ph-bold ph-fire text-orange-500 text-xl"></i></button>
+            <button id="toggle3d" title="Toggle 3D View" class="bg-white p-3 rounded-full shadow-md hover:bg-gray-100 transition-all"><i class="ph-bold ph-cube text-purple-500 text-xl"></i></button>
+            <button id="startWalkingSim" title="Start Walking Simulation" class="bg-white p-3 rounded-full shadow-md hover:bg-gray-100 transition-all"><i class="ph-bold ph-person-simple-walk text-lime-500 text-xl"></i></button>
+        </div>
+        
+        <div id="api-error-overlay" class="absolute inset-0 bg-white/90 z-50 hidden items-center justify-center p-4 text-center">
+             <div class="bg-white p-8 rounded-xl shadow-2xl border-2 border-red-200 text-left">
+                <div class="flex items-center mb-4"><i class="ph-bold ph-warning-circle text-red-500 text-6xl mr-4"></i><h2 class="text-2xl font-bold text-red-700">Map Initialization Failed</h2></div>
+                <p class="text-gray-600 mt-2">This application cannot load Google Maps due to a project settings issue.</p>
+                <p class="text-gray-600 mt-4 font-semibold">Please check:</p>
+                <ol class="list-decimal list-inside text-gray-600 mt-2 space-y-2">
+                    <li><strong>Billing is enabled</strong>.</li>
+                    <li>All necessary APIs are enabled: <strong>Maps JavaScript, Directions, Places, Air Quality, Generative Language</strong>.</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Gemini AI Modal -->
+    <div id="gemini-modal" class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-[1000] hidden">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+            <div class="flex justify-between items-center p-4 border-b">
+                <h3 id="modal-title" class="text-lg font-bold text-gray-800">✨ AI Insights</h3>
+                <button id="close-modal" class="text-gray-500 hover:text-gray-800"><i class="ph-bold ph-x text-2xl"></i></button>
+            </div>
+            <div class="p-6 overflow-y-auto">
+                <div id="modal-loader" class="flex justify-center items-center py-10"><div class="loader"></div></div>
+                <div id="modal-content" class="text-gray-700 leading-relaxed hidden prose"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Contextual Info Window on Map -->
+    <div id="context-window" class="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white p-4 rounded-lg shadow-lg w-11/12 max-w-md hidden transition-all transform translate-y-4 opacity-0">
+        <!-- Content will be dynamically inserted here -->
+    </div>
+     <!-- Toast Notification Container -->
+    <div id="toast-container" class="absolute bottom-4 right-4 z-50 space-y-2"></div>
+
+    <script>
+        // ==============================================================================
+        //  API KEYS & BACKEND SIMULATION
+        // ==============================================================================
+        const mapsApiKey = "AIzaSyAYBsSJa3C6O57-4aeygLHKDaJIekNo7ME";
+        const airQualityApiKey = "AIzaSyDhdikoAIvBliaXd5K7fIea5DBc11RQ8x0";
+        const geminiApiKey = "AIzaSyAqc5oIkD-FrgCeG0QVA6y7q17oDfTrQI4";
+
+        const simData = {
+            micro: { pois: [ { id: "poi_nyu", name: "New York University", type: "University", lat: 40.7291, lng: -73.9965, stress: 0.7 }, { id: "poi_wallst", name: "Wall Street", type: "Financial District", lat: 40.7061, lng: -74.0088, stress: 0.95 }, { id: "poi_gcs", name: "Grand Central", type: "Transit Station", lat: 40.7527, lng: -73.9772, stress: 0.9 }, { id: "poi_bryantpark", name: "Bryant Park", type: "Park", lat: 40.7536, lng: -73.9832, stress: 0.15 }, { id: "poi_met", name: "The MET Museum", type: "Museum", lat: 40.7794, lng: -73.9632, stress: 0.4 } ] },
+            meso: { heatmap: [ { location: { lat: 40.7061, lng: -74.0088 }, weight: 95 }, { location: { lat: 40.7580, lng: -73.9855 }, weight: 90 }, { location: { lat: 40.7527, lng: -73.9772 }, weight: 91 }, { location: { lat: 40.7291, lng: -73.9965 }, weight: 65 }, { location: { lat: 40.7794, lng: -73.9632 }, weight: 40 }, { location: { lat: 40.7536, lng: -73.9832 }, weight: 15 } ] },
+            macro: { cities: [ { name: "New York", lat: 40.7128, lng: -74.0060, index: 85 }, { name: "Chicago", lat: 41.8781, lng: -87.6298, index: 78 }, { name: "Los Angeles", lat: 34.0522, lng: -118.2437, index: 75 }, { name: "Miami", lat: 25.7617, lng: -80.1918, index: 45 }, { name: "Denver", lat: 39.7392, lng: -104.9903, index: 35 } ] }
+        };
+
+        // ==============================================================================
+        //  APP STATE & INITIALIZATION
+        // ==============================================================================
+        let map, heatmap, directionsRenderer;
+        let activeMarkers = [], activeCircles = [];
+        let walkingSim = { isActive: false, marker: null, polyline: null, animationFrameId: null };
+        let isMapApiLoaded = false;
+        
+        function initMap() {
+            isMapApiLoaded = true;
+            const nyc = { lat: 40.75, lng: -73.98 };
+            map = new google.maps.Map(document.getElementById("map"), {
+                center: nyc, zoom: 13, mapId: 'AURA_ATLAS_STYLE', disableDefaultUI: true, zoomControl: true,
+            });
+            
+            directionsRenderer = new google.maps.DirectionsRenderer({ suppressMarkers: true, polylineOptions: { strokeColor: '#3b82f6', strokeWeight: 6 } });
+            directionsRenderer.setMap(map);
+            
+            createLayers();
+            setupEventListeners();
+            updateMapView();
+        }
+
+        function mapApiError() { document.getElementById('api-error-overlay').style.display = 'flex'; }
+        window.initMap = initMap;
+        
+        // ==============================================================================
+        //  UI & MAP RENDERING LOGIC
+        // ==============================================================================
+        function getStressColor(stressValue) {
+            if (stressValue > 0.8) return '#ef4444';
+            if (stressValue > 0.6) return '#f97316';
+            if (stressValue > 0.4) return '#facc15';
+            return '#22c55e';
+        }
+        
+        function getAqiDetails(aqi) {
+            if (aqi <= 50) return { color: '#22c55e' }; 
+            if (aqi <= 100) return { color: '#facc15' };
+            if (aqi <= 150) return { color: '#f97316' };
+            if (aqi <= 200) return { color: '#ef4444' };
+            if (aqi <= 300) return { color: '#a855f7' };
+            return { color: '#7e22ce' }; 
+        }
+
+        function createLayers() {
+            const heatmapData = simData.meso.heatmap.map(p => ({ location: new google.maps.LatLng(p.location.lat, p.location.lng), weight: p.weight }));
+            heatmap = new google.maps.visualization.HeatmapLayer({ data: heatmapData, radius: 60, opacity: 0.7, map: null });
+            
+            simData.micro.pois.forEach(poi => {
+                const marker = new google.maps.Marker({ position: poi, title: poi.name, icon: { path: google.maps.SymbolPath.CIRCLE, scale: 8, fillColor: getStressColor(poi.stress), fillOpacity: 0.9, strokeColor: "white", strokeWeight: 2 }});
+                marker.addListener('click', () => updateContextWindow('poi', poi));
+                activeMarkers.push(marker);
+            });
+
+            simData.macro.cities.forEach(city => {
+                const circle = new google.maps.Circle({
+                    strokeColor: getStressColor(city.index / 100), strokeWeight: 2, fillOpacity: 0.35,
+                    fillColor: getStressColor(city.index / 100), center: city, radius: 80000
+                });
+                circle.addListener('click', () => updateContextWindow('city', city));
+                activeCircles.push(circle);
+            });
+        }
+
+        function updateMapView() {
+            if (!isMapApiLoaded) return;
+            const zoom = map.getZoom();
+            const isHeatmapOn = document.getElementById('toggleHeatmap').classList.contains('active-map-btn');
+            
+            activeMarkers.forEach(m => m.setMap(zoom >= 12 ? map : null));
+            heatmap.setMap(zoom >= 12 && isHeatmapOn ? map : null);
+            activeCircles.forEach(c => c.setMap(zoom < 7 ? map : null));
+        }
+
+        function updateContextWindow(type = 'default', data = {}) {
+            const panel = document.getElementById('context-window');
+            let content = '';
+
+            if(type === 'hide' || !data) {
+                panel.classList.add('hidden', 'opacit
